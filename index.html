@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextStylr Pro - Advanced Text Formatter</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-color: #e0e0e0;
+            --text-muted: #888888;
+            --border-color: #333333;
+            --success-color: #22c55e;
+        }
+
+        body.light-theme {
+            --bg-color: #f0f2f5;
+            --surface-color: #ffffff;
+            --primary-color: #0a66c2;
+            --primary-hover: #08519a;
+            --text-color: #1c1e21;
+            --text-muted: #606770;
+            --border-color: #dddfe2;
+            --success-color: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            padding: 2rem;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: var(--surface-color);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+            fill: var(--primary-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .input-panel, .output-panel {
+            padding: 2rem;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .input-panel {
+            border-right: 1px solid var(--border-color);
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            resize: vertical;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+
+        #main-input {
+            min-height: 200px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .stats {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            background-color: var(--surface-color);
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-color);
+            color: var(--surface-color);
+        }
+
+        #outputs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .output-card {
+            position: relative;
+        }
+
+        .output-card textarea {
+            min-height: 80px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            opacity: 0.8;
+            transition: opacity 0.2s, background-color 0.2s;
+        }
+
+        .output-card:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn.copied {
+            background-color: var(--success-color);
+        }
+        
+        /* Snippets */
+        #snippets-container { margin-top: 2rem; }
+        .snippet-list { list-style: none; margin-top: 1rem; max-height: 150px; overflow-y: auto; padding-right: 10px; }
+        .snippet-item { display: flex; justify-content: space-between; align-items: center; background: var(--bg-color); padding: 0.5rem; border-radius: 6px; margin-bottom: 0.5rem; }
+        .snippet-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; flex-grow: 1; }
+        .snippet-actions button { background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 0.5rem; }
+        .snippet-actions button:hover { color: var(--primary-color); }
+
+        /* Tabs */
+        .tab-nav { display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .tab-btn { background: none; border: none; color: var(--text-muted); padding: 0.5rem 0; cursor: pointer; font-size: 1rem; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* LinkedIn Preview */
+        #linkedin-preview { background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; }
+        .preview-header { display: flex; align-items: center; gap: 0.75rem; }
+        .preview-avatar { width: 50px; height: 50px; border-radius: 50%; background: #555; }
+        .preview-user-info { font-size: 0.875rem; }
+        .preview-user-info div:first-child { font-weight: 600; color: var(--text-color); }
+        .preview-user-info div:last-child { color: var(--text-muted); }
+        .preview-content { margin-top: 1rem; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; }
+
+        /* Theme Switch */
+        .theme-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .theme-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        @media (max-width: 900px) {
+            .main-content { flex-direction: column; }
+            .input-panel { border-right: none; border-bottom: 1px solid var(--border-color); }
+            body { padding: 1rem; }
+            header { padding: 1rem; }
+            .input-panel, .output-panel { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <svg viewBox="0 0 24 24"><path d="M14.2,12.2c-0.2-0.1-0.5-0.2-0.8-0.2c-0.4,0-0.8,0.1-1.1,0.4c-0.3,0.3-0.5,0.6-0.5,1.1c0,0.4,0.2,0.8,0.5,1.1 c0.3,0.3,0.7,0.4,1.1,0.4c0.3,0,0.6-0.1,0.8-0.2c0.2-0.1,0.4-0.3,0.6-0.5l1.4,1.4c-0.4,0.5-0.9,0.9-1.5,1.2c-0.6,0.3-1.3,0.4-2,0.4 c-0.9,0-1.8-0.2-2.5-0.6c-0.7-0.4-1.3-1-1.8-1.7c-0.5-0.7-0.7-1.5-0.7-2.4c0-0.9,0.2-1.7,0.7-2.4c0.5-0.7,1.1-1.3,1.8-1.7 c0.7-0.4,1.6-0.6,2.5-0.6c0.7,0,1.4,0.1,2,0.4c0.6,0.3,1.1,0.7,1.5,1.2l-1.4,1.4C14.6,12.5,14.4,12.3,14.2,12.2z M22,3H2C1.4,3,1,3.4,1,4v16c0,0.6,0.4,1,1,1h20c0.6,0,1-0.4,1-1V4C23,3.4,22.6,3,22,3z M21,19H3V5h18V19z"></path></svg>
+                <h1>TextStylr Pro</h1>
+            </div>
+            <label class="theme-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+        </header>
+
+        <main class="main-content">
+            <div class="input-panel">
+                <h2>Editor</h2>
+                <textarea id="main-input" placeholder="Start typing here to see the magic happen..."></textarea>
+                <div class="toolbar">
+                    <div class="stats">
+                        <span id="char-count">0</span> characters | <span id="word-count">0</span> words
+                    </div>
+                    <button class="btn" id="clear-btn">Clear</button>
+                </div>
+                
+                <div id="snippets-container">
+                    <h2>Saved Snippets</h2>
+                    <button class="btn" id="add-snippet-btn">Add New Snippet</button>
+                    <ul class="snippet-list" id="snippet-list"></ul>
+                </div>
+            </div>
+
+            <div class="output-panel">
+                <div class="tab-nav">
+                    <button class="tab-btn active" data-tab="styled-text">Styled Text</button>
+                    <button class="tab-btn" data-tab="preview">LinkedIn Preview</button>
+                </div>
+
+                <div id="styled-text" class="tab-content active">
+                    <div id="outputs-grid">
+                        <!-- Outputs will be generated by JS -->
+                    </div>
+                </div>
+
+                <div id="preview" class="tab-content">
+                    <div id="linkedin-preview">
+                        <div class="preview-header">
+                            <div class="preview-avatar"></div>
+                            <div class="preview-user-info">
+                                <div>Your Name</div>
+                                <div>Just now • 🌎</div>
+                            </div>
+                        </div>
+                        <div class="preview-content" id="preview-content-area"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM ELEMENTS ---
+            const mainInput = document.getElementById('main-input');
+            const outputsGrid = document.getElementById('outputs-grid');
+            const charCountEl = document.getElementById('char-count');
+            const wordCountEl = document.getElementById('word-count');
+            const clearBtn = document.getElementById('clear-btn');
+            const themeToggle = document.getElementById('theme-toggle');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const previewContentArea = document.getElementById('preview-content-area');
+            const addSnippetBtn = document.getElementById('add-snippet-btn');
+            const snippetList = document.getElementById('snippet-list');
+
+            // --- CHARACTER MAPS ---
+            const maps = {
+                bold: { 'A': '𝗔', 'B': '𝗕', 'C': '𝗖', 'D': '𝗗', 'E': '𝗘', 'F': '𝗙', 'G': '𝗚', 'H': '𝗛', 'I': '𝗜', 'J': '𝗝', 'K': '𝗞', 'L': '𝗟', 'M': '𝗠', 'N': '𝗡', 'O': '𝗢', 'P': '𝗣', 'Q': '𝗤', 'R': '𝗥', 'S': '𝗦', 'T': '𝗧', 'U': '𝗨', 'V': '𝗩', 'W': '𝗪', 'X': '𝗫', 'Y': '𝗬', 'Z': '𝗭', 'a': '𝗮', 'b': '𝗯', 'c': '𝗰', 'd': '𝗱', 'e': '𝗲', 'f': '𝗳', 'g': '𝗴', 'h': '𝗵', 'i': '𝗶', 'j': '𝗷', 'k': '𝗸', 'l': '𝗹', 'm': '𝗺', 'n': '𝗻', 'o': '𝗼', 'p': '𝗽', 'q': '𝗾', 'r': '𝗿', 's': '𝘀', 't': '𝘁', 'u': '𝘂', 'v': '𝘃', 'w': '𝘄', 'x': '𝘅', 'y': '𝘆', 'z': '𝘇', '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵' },
+                italic: { 'A': '𝘈', 'B': '𝘉', 'C': '𝘊', 'D': '𝘋', 'E': '𝘌', 'F': '𝘍', 'G': '𝘎', 'H': '𝘏', 'I': '𝘐', 'J': '𝘑', 'K': '𝘒', 'L': '𝘓', 'M': '𝘔', 'N': '𝘕', 'O': '𝘖', 'P': '𝘗', 'Q': '𝘘', 'R': '𝘙', 'S': '𝘚', 'T': '𝘛', 'U': '𝘜', 'V': '𝘝', 'W': '𝘞', 'X': '𝘟', 'Y': '𝘠', 'Z': '𝘡', 'a': '𝘢', 'b': '𝘣', 'c': '𝘤', 'd': '𝘥', 'e': '𝘦', 'f': '𝘧', 'g': '𝘨', 'h': '𝘩', 'i': '𝘪', 'j': '𝘫', 'k': '𝘬', 'l': '𝘭', 'm': '𝘮', 'n': '𝘯', 'o': '𝘰', 'p': '𝘱', 'q': '𝘲', 'r': '𝘳', 's': '𝘴', 't': '𝘵', 'u': '𝘶', 'v': '𝘷', 'w': '𝘸', 'x': '𝘹', 'y': '𝘺', 'z': '𝘻' },
+                boldItalic: { 'A': '𝘼', 'B': '𝘽', 'C': '𝘾', 'D': '𝘿', 'E': '𝙀', 'F': '𝙁', 'G': '𝙂', 'H': '𝙃', 'I': '𝙄', 'J': '𝙅', 'K': '𝙆', 'L': '𝙇', 'M': '𝙈', 'N': '𝙉', 'O': '𝙊', 'P': '𝙋', 'Q': '𝙌', 'R': '𝙍', 'S': '𝙎', 'T': '𝙏', 'U': '𝙐', 'V': '𝙑', 'W': '𝙒', 'X': '𝙓', 'Y': '𝙔', 'Z': '𝙕', 'a': '𝙖', 'b': '𝙗', 'c': '𝙘', 'd': '𝙙', 'e': '𝙚', 'f': '𝙛', 'g': '𝙜', 'h': '𝙝', 'i': '𝙞', 'j': '𝙟', 'k': '𝙠', 'l': '𝙡', 'm': '𝙢', 'n': '𝙣', 'o': '𝙤', 'p': '𝙥', 'q': '𝙦', 'r': '𝙧', 's': '𝙨', 't': '𝙩', 'u': '𝙪', 'v': '𝙫', 'w': '𝙬', 'x': '𝙭', 'y': '𝙮', 'z': '𝙯' },
+                script: { 'A': '𝒜', 'B': 'ℬ', 'C': '𝒞', 'D': '𝒟', 'E': 'ℰ', 'F': 'ℱ', 'G': '𝒢', 'H': 'ℋ', 'I': 'ℐ', 'J': '𝒥', 'K': '𝒦', 'L': 'ℒ', 'M': 'ℳ', 'N': '𝒩', 'O': '𝒪', 'P': '𝒫', 'Q': '𝒬', 'R': 'ℛ', 'S': '𝒮', 'T': '𝒯', 'U': '𝒰', 'V': '𝒱', 'W': '𝒲', 'X': '𝒳', 'Y': '𝒴', 'Z': '𝒵', 'a': '𝒶', 'b': '𝒷', 'c': '𝒸', 'd': '𝒹', 'e': 'ℯ', 'f': '𝒻', 'g': 'ℊ', 'h': '𝒽', 'i': '𝒾', 'j': '𝒿', 'k': '𝓀', 'l': '𝓁', 'm': '𝓂', 'n': '𝓃', 'o': 'ℴ', 'p': '𝓅', 'q': '𝓆', 'r': '𝓇', 's': '𝓈', 't': '𝓉', 'u': '𝓊', 'v': '𝓋', 'w': '𝓌', 'x': '𝓍', 'y': '𝓎', 'z': '𝓏' },
+                boldScript: { 'A': '𝓐', 'B': '𝓑', 'C': '𝓒', 'D': '𝓓', 'E': '𝓔', 'F': '𝓕', 'G': '𝓖', 'H': '𝓗', 'I': '𝓘', 'J': '𝓙', 'K': '𝓚', 'L': '𝓛', 'M': '𝓜', 'N': '𝓝', 'O': '𝓞', 'P': '𝓟', 'Q': '𝓠', 'R': '𝓡', 'S': '𝓢', 'T': '𝓣', 'U': '𝓤', 'V': '𝓥', 'W': '𝓦', 'X': '𝓧', 'Y': '𝓨', 'Z': '𝓩', 'a': '𝓪', 'b': '𝓫', 'c': '𝓬', 'd': '𝓭', 'e': '𝓮', 'f': '𝓯', 'g': '𝓰', 'h': '𝓱', 'i': '𝓲', 'j': '𝓳', 'k': '𝓴', 'l': '𝓵', 'm': '𝓶', 'n': '𝓷', 'o': '𝓸', 'p': '𝓹', 'q': '𝓺', 'r': '𝓻', 's': '𝓼', 't': '𝓽', 'u': '𝓾', 'v': '𝓿', 'w': '𝔀', 'x': '𝔁', 'y': '𝔂', 'z': '𝔃' },
+                fraktur: { 'A': '𝔄', 'B': '𝔅', 'C': 'ℭ', 'D': '𝔇', 'E': '𝔈', 'F': '𝔉', 'G': '𝔊', 'H': 'ℌ', 'I': 'ℑ', 'J': '𝔍', 'K': '𝔎', 'L': '𝔏', 'M': '𝔐', 'N': '𝔑', 'O': '𝔒', 'P': '𝔓', 'Q': '𝔔', 'R': 'ℜ', 'S': '𝔖', 'T': '𝔗', 'U': '𝔘', 'V': '𝔙', 'W': '𝔚', 'X': '𝔛', 'Y': '𝔜', 'Z': 'ℨ', 'a': '𝔞', 'b': '𝔟', 'c': '𝔠', 'd': '𝔡', 'e': '𝔢', 'f': '𝔣', 'g': '𝔤', 'h': '𝔥', 'i': '𝔦', 'j': '𝔧', 'k': '𝔨', 'l': '𝔩', 'm': '𝔪', 'n': '𝔫', 'o': '𝔬', 'p': '𝔭', 'q': '𝔮', 'r': '𝔯', 's': '𝔰', 't': '𝔱', 'u': '𝔲', 'v': '𝔳', 'w': '𝔴', 'x': '𝔵', 'y': '𝔶', 'z': '𝔷' },
+                monospace: { 'A': '𝙰', 'B': '𝙱', 'C': '𝙲', 'D': '𝙳', 'E': '𝙴', 'F': '𝙵', 'G': '𝙶', 'H': '𝙷', 'I': '𝙸', 'J': '𝙹', 'K': '𝙺', 'L': '𝙻', 'M': '𝙼', 'N': '𝙽', 'O': '𝙾', 'P': '𝙿', 'Q': '𝚀', 'R': '𝚁', 'S': '𝚂', 'T': '𝚃', 'U': '𝚄', 'V': '𝚅', 'W': '𝚆', 'X': '𝚇', 'Y': '𝚈', 'Z': '𝚉', 'a': '𝚊', 'b': '𝚋', 'c': '𝚌', 'd': '𝚍', 'e': '𝚎', 'f': '𝚏', 'g': '𝚐', 'h': '𝚑', 'i': '𝚒', 'j': '𝚓', 'k': '𝚔', 'l': '𝚕', 'm': '𝚖', 'n': '𝚗', 'o': '𝚘', 'p': '𝚙', 'q': '𝚚', 'r': '𝚛', 's': '𝚜', 't': '𝚝', 'u': '𝚞', 'v': '𝚟', 'w': '𝚠', 'x': '𝚡', 'y': '𝚢', 'z': '𝚣', '0': '𝟶', '1': '𝟷', '2': '𝟸', '3': '𝟹', '4': '𝟺', '5': '𝟻', '6': '𝟼', '7': '𝟽', '8': '𝟾', '9': '𝟿' }
+            };
+
+            const formatters = [
+                { name: 'Bold', id: 'bold', type: 'map', map: maps.bold },
+                { name: 'Italic', id: 'italic', type: 'map', map: maps.italic },
+                { name: 'Bold Italic', id: 'boldItalic', type: 'map', map: maps.boldItalic },
+                { name: 'Script', id: 'script', type: 'map', map: maps.script },
+                { name: 'Bold Script', id: 'boldScript', type: 'map', map: maps.boldScript },
+                { name: 'Fraktur', id: 'fraktur', type: 'map', map: maps.fraktur },
+                { name: 'Monospace', id: 'monospace', type: 'map', map: maps.monospace },
+                { name: 'Double Underline', id: 'doubleUnderline', type: 'special', func: (text) => text.split('').join('\u0333') },
+                { name: 'Strikethrough', id: 'strikethrough', type: 'special', func: (text) => text.split('').join('\u0336') },
+            ];
+
+            // --- INITIALIZE UI ---
+            function initializeOutputs() {
+                formatters.forEach(formatter => {
+                    const card = document.createElement('div');
+                    card.className = 'output-card';
+                    card.innerHTML = `
+                        <label for="${formatter.id}-output">${formatter.name}</label>
+                        <textarea id="${formatter.id}-output" readonly></textarea>
+                        <button class="copy-btn" data-target="${formatter.id}-output">Copy</button>
+                    `;
+                    outputsGrid.appendChild(card);
+                });
+            }
+            initializeOutputs();
+
+            // --- CORE FUNCTIONS ---
+            function convertText(text, map) {
+                return text.split('').map(char => map[char] || char).join('');
+            }
+
+            function updateAllOutputs() {
+                const text = mainInput.value;
+
+                formatters.forEach(formatter => {
+                    const outputEl = document.getElementById(`${formatter.id}-output`);
+                    if (formatter.type === 'map') {
+                        outputEl.value = convertText(text, formatter.map);
+                    } else if (formatter.type === 'special') {
+                        outputEl.value = formatter.func(text);
+                    }
+                });
+
+                // Update stats
+                charCountEl.textContent = text.length;
+                wordCountEl.textContent = text.trim().split(/\s+/).filter(Boolean).length;
+
+                // Update preview
+                previewContentArea.textContent = text;
+            }
+
+            // --- SNIPPETS LOGIC ---
+            let snippets = JSON.parse(localStorage.getItem('textStylrSnippets')) || [];
+
+            function saveSnippets() {
+                localStorage.setItem('textStylrSnippets', JSON.stringify(snippets));
+            }
+
+            function renderSnippets() {
+                snippetList.innerHTML = '';
+                if (snippets.length === 0) {
+                    snippetList.innerHTML = '<li style="color: var(--text-muted); font-style: italic;">No snippets saved yet.</li>';
+                    return;
+                }
+                snippets.forEach((snippet, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'snippet-item';
+                    li.innerHTML = `
+                        <span class="snippet-text" title="Click to insert">${snippet}</span>
+                        <div class="snippet-actions">
+                            <button class="delete-snippet-btn" data-index="${index}" title="Delete snippet"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                    li.querySelector('.snippet-text').addEventListener('click', () => {
+                        mainInput.value += snippet;
+                        updateAllOutputs();
+                    });
+                    snippetList.appendChild(li);
+                });
+            }
+
+            addSnippetBtn.addEventListener('click', () => {
+                const newSnippet = prompt('Enter the text for your new snippet:');
+                if (newSnippet && newSnippet.trim() !== '') {
+                    snippets.push(newSnippet);
+                    saveSnippets();
+                    renderSnippets();
+                }
+            });
+
+            snippetList.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-snippet-btn')) {
+                    const index = e.target.closest('.delete-snippet-btn').dataset.index;
+                    if (confirm('Are you sure you want to delete this snippet?')) {
+                        snippets.splice(index, 1);
+                        saveSnippets();
+                        renderSnippets();
+                    }
+                }
+            });
+
+            // --- THEME LOGIC ---
+            function applyTheme(theme) {
+                if (theme === 'light') {
+                    document.body.classList.add('light-theme');
+                    themeToggle.checked = false;
+                } else {
+                    document.body.classList.remove('light-theme');
+                    themeToggle.checked = true;
+                }
+            }
+
+            themeToggle.addEventListener('change', () => {
+                const theme = themeToggle.checked ? 'dark' : 'light';
+                localStorage.setItem('textStylrTheme', theme);
+                applyTheme(theme);
+            });
+
+            // --- TAB LOGIC ---
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById(btn.dataset.tab).classList.add('active');
+                });
+            });
+
+            // --- EVENT LISTENERS ---
+            mainInput.addEventListener('input', updateAllOutputs);
+            clearBtn.addEventListener('click', () => {
+                mainInput.value = '';
+                updateAllOutputs();
+            });
+
+            outputsGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('copy-btn')) {
+                    const button = e.target;
+                    const targetId = button.dataset.target;
+                    const textarea = document.getElementById(targetId);
+                    navigator.clipboard.writeText(textarea.value).then(() => {
+                        button.textContent = 'Copied!';
+                        button.classList.add('copied');
+                        setTimeout(() => {
+                            button.textContent = 'Copy';
+                            button.classList.remove('copied');
+                        }, 2000);
+                    });
+                }
+            });
+
+            // --- INITIAL LOAD ---
+            const savedTheme = localStorage.getItem('textStylrTheme') || 'dark';
+            applyTheme(savedTheme);
+            renderSnippets();
+        });
+    </script>
+</body>
+</html>
